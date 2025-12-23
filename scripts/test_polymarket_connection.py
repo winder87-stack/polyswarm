@@ -141,7 +141,7 @@ async def main():
         print(f"   ✅ PolymarketClient imported")
 
         # Test get_markets
-        markets = await polymarket.get_markets(limit=3, min_volume=10000, min_liquidity=1000)
+        markets = await polymarket.get_markets(limit=3, min_volume=50000, min_liquidity=25000)
         print(f"   ✅ get_markets: {len(markets)} markets")
 
         if markets:

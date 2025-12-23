@@ -39,7 +39,9 @@ class RiskLimits:
 
     # Volume/Liquidity requirements
     min_market_volume: float = 50000       # $50k minimum
-    min_market_liquidity: float = 1.0       # $1.00 minimum (realistic for Polymarket)
+    # IMPORTANT: Used as a hard guardrail against slippage/illiquid markets.
+    # Matches repo risk rules: Min Liquidity: $25,000
+    min_market_liquidity: float = 25000.0   # $25k minimum liquidity
     max_order_pct_of_liquidity: float = 0.02  # 2% max
 
 
@@ -49,7 +51,8 @@ class LiquidityRequirements:
 
     # Minimum market requirements
     min_volume_24h: float = 50000          # $50k minimum 24h volume
-    min_liquidity: float = 1.0             # $1.00 minimum liquidity (realistic for Polymarket)
+    # IMPORTANT: Matches repo risk rules: Min Liquidity: $25,000
+    min_liquidity: float = 25000.0         # $25k minimum liquidity
     min_volume_lifetime: float = 100000    # $100k lifetime volume
 
     # Order size limits (relative to market)

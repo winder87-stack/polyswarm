@@ -49,7 +49,9 @@ class ProjectAuditor:
         print("\n📦 Checking Imports...")
 
         required_modules = [
-            "anthropic", "openai", "google.generativeai",
+            "anthropic", "openai",
+            # Accept either the new or legacy Google SDK
+            "google.genai", "google.generativeai",
             "aiohttp", "httpx", "pandas", "numpy",
             "feedparser", "fuzzywuzzy", "loguru"
         ]
@@ -72,7 +74,11 @@ class ProjectAuditor:
                 importlib.import_module(module.replace("-", "."))
                 self.passed.append(f"Import OK: {module}")
             except ImportError:
-                self.issues.append(f"Missing required module: {module}")
+                # Don't require BOTH Google SDKs; at least one is enough.
+                if module in {"google.genai", "google.generativeai"}:
+                    self.warnings.append(f"Missing optional Google SDK: {module}")
+                else:
+                    self.issues.append(f"Missing required module: {module}")
 
         for module in optional_modules:
             try:
@@ -319,7 +325,8 @@ class ProjectAuditor:
                 self.issues.append("PAPER_TRADING not properly set (should be 'true' or 'false')")
 
             # Check risk limits are reasonable
-            max_position = float(os.getenv("MAX_POSITION", "100"))  # Default is now 100
+            # Env var compatibility: prefer MAX_POSITION_SIZE, fallback to legacy MAX_POSITION
+            max_position = float(os.getenv("MAX_POSITION_SIZE", os.getenv("MAX_POSITION", "100")))
             if max_position <= 50:
                 self.passed.append(f"Very conservative position limit: ${max_position}")
             elif max_position <= 100:
@@ -348,7 +355,6 @@ class ProjectAuditor:
         print(f"   Total Checks: {total_checks}")
         print(f"   ✅ Passed: {len(self.passed)}")
         print(f"   ❌ Issues: {len(self.issues)}")
-        print(".1f")
         print()
 
         if self.issues:

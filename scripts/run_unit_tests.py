@@ -368,7 +368,6 @@ class TradingTestRunner:
         print(f"   Total Tests: {total_tests}")
         print(f"   Passed: {total_passed}")
         print(f"   Failed: {total_failed}")
-        print(".1f")
 
         if total_failed == 0:
             print("🎉 ALL TESTS PASSED! Ready for trading.")

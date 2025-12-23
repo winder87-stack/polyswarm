@@ -633,7 +633,13 @@ Explain your reasoning for any adjustment.'''
         # Wait for any remaining tasks to complete or timeout
         if len(responses) < len(tasks):
             print(colored("⏳ Waiting for remaining queries to complete or timeout...", "yellow"))
-            await asyncio.gather(*tasks, return_exceptions=True)
+            tail_results = await asyncio.gather(*tasks, return_exceptions=True)
+            for r in tail_results:
+                # gather(return_exceptions=True) returns exceptions as values (including CancelledError)
+                if isinstance(r, asyncio.CancelledError):
+                    continue
+                if isinstance(r, Exception):
+                    logger.warning(f"Swarm query task ended with exception: {r}")
 
         return responses
 

@@ -13,6 +13,10 @@ py-clob-client>=0.21.0
 # ===========================================
 anthropic>=0.42.0
 openai>=1.59.0
+# Google Gemini SDKs:
+# - google-genai is the new SDK (preferred)
+# - google-generativeai is deprecated but kept for fallback compatibility
+google-genai>=0.3.0
 google-generativeai>=0.4.0
 httpx>=0.27.0
 
@@ -91,4 +95,3 @@ tenacity>=8.2.0        # Retry with backoff
 # flake8>=6.0.0
 # mypy>=1.0.0
 seaborn>=0.12.0
-scikit-learn>=1.3.0

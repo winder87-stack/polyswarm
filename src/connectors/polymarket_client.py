@@ -179,7 +179,7 @@ class PolymarketClient:
         self,
         limit: int = 50,
         min_volume: float = 50000,
-        min_liquidity: float = 10000,
+        min_liquidity: float = 25000,
         active_only: bool = True,
         closed: bool = False,
     ) -> List[Market]:
@@ -255,8 +255,8 @@ class PolymarketClient:
                             hours_left = (end - datetime.now(timezone.utc)).total_seconds() / 3600
                             if hours_left < 24:  # Skip markets closing in <24h
                                 continue
-                        except:
-                            pass
+                        except Exception as e:
+                            logger.debug(f"Could not parse endDate={end_date!r} for conditionId={m.get('conditionId','')}: {e}")
 
                     markets.append(Market(
                         condition_id=m.get("conditionId", ""),
@@ -411,6 +411,16 @@ class PolymarketClient:
         try:
             # Rate limiting for CLOB order endpoint
             await rate_limiter.wait_for_clob_order()
+
+            # Validate inputs early
+            if not token_id:
+                return {"error": "Missing token_id"}
+            if size <= 0:
+                return {"error": f"Invalid size {size} (must be > 0)"}
+            side_norm = side.upper().strip()
+            if side_norm not in {"BUY", "SELL"}:
+                return {"error": f"Invalid side {side!r} (expected BUY or SELL)"}
+
             # Validate price
             price = round(price, 2)
             if not 0.01 <= price <= 0.99:
@@ -421,7 +431,7 @@ class PolymarketClient:
                 token_id=token_id,
                 price=price,
                 size=size,
-                side=BUY if side.upper() == "BUY" else SELL
+                side=BUY if side_norm == "BUY" else SELL
             )
 
             # Create signed order
@@ -439,7 +449,15 @@ class PolymarketClient:
             return response
 
         except Exception as e:
-            logger.error(f"❌ Limit order failed: {e}")
+            logger.exception(
+                "❌ Limit order failed: token_id={}, side={}, size={}, price={}, tick_size={}, neg_risk={}",
+                token_id,
+                side,
+                size,
+                price,
+                tick_size,
+                neg_risk,
+            )
             return {"error": str(e)}
 
     async def place_market_order(
@@ -471,10 +489,19 @@ class PolymarketClient:
             # Rate limiting for CLOB order endpoint
             await rate_limiter.wait_for_clob_order()
 
+            # Validate inputs early
+            if not token_id:
+                return {"error": "Missing token_id"}
+            if amount <= 0:
+                return {"error": f"Invalid amount {amount} (must be > 0)"}
+            side_norm = side.upper().strip()
+            if side_norm not in {"BUY", "SELL"}:
+                return {"error": f"Invalid side {side!r} (expected BUY or SELL)"}
+
             order_args = MarketOrderArgs(
                 token_id=token_id,
                 amount=amount,
-                side=BUY if side.upper() == "BUY" else SELL
+                side=BUY if side_norm == "BUY" else SELL
             )
 
             signed_order = self.trade_client.create_market_order(order_args)
@@ -490,7 +517,14 @@ class PolymarketClient:
             return response
 
         except Exception as e:
-            logger.error(f"❌ Market order failed: {e}")
+            logger.exception(
+                "❌ Market order failed: token_id={}, side={}, amount={}, tick_size={}, neg_risk={}",
+                token_id,
+                side,
+                amount,
+                tick_size,
+                neg_risk,
+            )
             return {"error": str(e)}
 
     async def place_order_for_market(
@@ -521,7 +555,11 @@ class PolymarketClient:
             return {"error": f"No token ID for {direction}"}
 
         # Calculate shares from USD amount
-        shares = size_usd / price if price > 0 else 0
+        if size_usd <= 0:
+            return {"error": f"Invalid size_usd {size_usd} (must be > 0)"}
+        if price <= 0:
+            return {"error": f"Invalid market price {price} for {direction}"}
+        shares = size_usd / price
 
         if order_type == "market":
             return await self.place_market_order(

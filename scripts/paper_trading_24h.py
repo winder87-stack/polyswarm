@@ -58,7 +58,7 @@ CONFIG = {
 
     # STRICT VOLUME REQUIREMENTS (anti-slippage)
     "min_volume": 50000,           # $50k minimum 24h volume
-    "min_liquidity": 1.0,          # $1.00 minimum liquidity (realistic)
+    "min_liquidity": 25000.0,      # $25k minimum liquidity (anti-slippage)
     "max_order_pct_of_liquidity": 0.02,  # Max 2% of liquidity per order
     "max_slippage_pct": 0.02,      # Max 2% slippage
 

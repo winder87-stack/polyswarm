@@ -128,7 +128,8 @@ class PreFlightCheck:
         modules = [
             ("anthropic", "Anthropic SDK"),
             ("openai", "OpenAI SDK"),
-            ("google.generativeai", "Google AI SDK"),
+            ("google.genai", "Google AI SDK (new)"),
+            ("google.generativeai", "Google AI SDK (legacy)"),
             ("httpx", "HTTP Client"),
             ("aiohttp", "Async HTTP"),
             ("pandas", "Data Analysis"),
@@ -255,13 +256,24 @@ class PreFlightCheck:
 
         # Test Gemini
         try:
-            import google.generativeai as genai
-            genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-            model = genai.GenerativeModel("gemini-pro")
+            google_key = os.getenv("GOOGLE_API_KEY")
+            if not google_key:
+                raise RuntimeError("GOOGLE_API_KEY not set")
+
             start = time.time()
-            response = model.generate_content("Say 'test'")
+            try:
+                from google import genai as genai_new  # type: ignore
+                client = genai_new.Client(api_key=google_key)
+                _ = client.models.generate_content(model="gemini-pro", contents="Say 'test'")
+            except Exception:
+                # fallback to legacy SDK
+                import google.generativeai as genai_legacy  # type: ignore
+                genai_legacy.configure(api_key=google_key)
+                model = genai_legacy.GenerativeModel("gemini-pro")
+                _ = model.generate_content("Say 'test'")
+
             elapsed = time.time() - start
-            self.record_pass(f"Gemini", f"({elapsed:.2f}s)")
+            self.record_pass("Gemini", f"({elapsed:.2f}s)")
             working_models += 1
         except Exception as e:
             self.record_fail("Gemini", str(e)[:50])

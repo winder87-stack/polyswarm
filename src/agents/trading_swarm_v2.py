@@ -350,6 +350,13 @@ class TradingSwarmV2:
             context_results = await asyncio.gather(*context_tasks, return_exceptions=True)
 
             # Parse results with error handling
+            if isinstance(context_results[0], Exception):
+                logger.debug(f"News context fetch failed: {context_results[0]}")
+            if isinstance(context_results[1], Exception):
+                logger.debug(f"External consensus fetch failed: {context_results[1]}")
+            if isinstance(context_results[2], Exception):
+                logger.debug(f"Contrarian scan failed: {context_results[2]}")
+
             news_context = context_results[0] if not isinstance(context_results[0], Exception) else []
             external_consensus = context_results[1] if not isinstance(context_results[1], Exception) else None
             contrarian_signals = context_results[2] if not isinstance(context_results[2], Exception) else []
@@ -626,7 +633,7 @@ Your analysis:"""
             markets = await polymarket.get_markets(
                 limit=min(limit * 3, 50),  # Get more to filter
                 min_volume=25000,    # $25k minimum volume (recommended)
-                min_liquidity=10000  # $10k minimum liquidity (recommended)
+                min_liquidity=25000  # $25k minimum liquidity (anti-slippage)
             )
 
             if not markets:
@@ -656,9 +663,15 @@ Your analysis:"""
             results = await asyncio.gather(*tasks, return_exceptions=True)
 
             # Filter valid signals
+            exception_count = 0
             for result in results:
-                if result and not isinstance(result, Exception):
+                if isinstance(result, Exception):
+                    exception_count += 1
+                    continue
+                if result:
                     signals.append(result)
+            if exception_count:
+                logger.warning(f"{exception_count} market analyses raised exceptions (skipped)")
 
             # Sort by quality score (edge * confidence)
             signals.sort(key=lambda s: s.edge * s.confidence, reverse=True)

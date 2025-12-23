@@ -27,11 +27,25 @@ from dotenv import load_dotenv
 load_dotenv()
 
 try:
-    import google.generativeai as genai
-    GOOGLE_AVAILABLE = True
+    # New SDK (preferred)
+    from google import genai as genai_new  # type: ignore
+    GOOGLE_GENAI_AVAILABLE = True
 except ImportError:
-    GOOGLE_AVAILABLE = False
-    genai = None
+    GOOGLE_GENAI_AVAILABLE = False
+    genai_new = None
+
+try:
+    # Legacy SDK (deprecated)
+    import warnings
+
+    with warnings.catch_warnings():
+        # The legacy SDK emits a loud FutureWarning at import time; suppress it.
+        warnings.filterwarnings("ignore", category=FutureWarning)
+        import google.generativeai as genai_legacy  # type: ignore
+    GOOGLE_LEGACY_AVAILABLE = True
+except ImportError:
+    GOOGLE_LEGACY_AVAILABLE = False
+    genai_legacy = None
 
 
 @dataclass
@@ -215,10 +229,18 @@ class GoogleModel(BaseModel):
     def __init__(self, model_name: str = "gemini-3-pro-preview") -> None:
         # Gemini 3 Pro pricing: $1.25/$5 per 1M tokens (input/output)
         super().__init__(model_name, "GOOGLE_API_KEY", cost_per_token=0.000003125)
-        if self.api_key and GOOGLE_AVAILABLE:
-            genai.configure(api_key=self.api_key)
-        elif not GOOGLE_AVAILABLE:
-            logger.warning("google-generativeai library not installed")
+        self._client = None
+        if not self.api_key:
+            return
+
+        if GOOGLE_GENAI_AVAILABLE:
+            # New SDK client
+            self._client = genai_new.Client(api_key=self.api_key)
+        elif GOOGLE_LEGACY_AVAILABLE:
+            # Legacy SDK setup (deprecated)
+            genai_legacy.configure(api_key=self.api_key)
+        else:
+            logger.warning("No Google Gemini SDK installed (install google-genai or google-generativeai)")
 
     def _call_api(
         self,
@@ -229,28 +251,58 @@ class GoogleModel(BaseModel):
         timeout: int
     ) -> Dict[str, Any]:
         """Call Google Gemini API."""
-        if not GOOGLE_AVAILABLE:
-            raise ImportError("google-generativeai library not installed")
-
         logger.debug(f"Calling Google Gemini with model: {self.model_name}")
-
-        model = genai.GenerativeModel(self.model_name)
 
         # Combine system prompt and user content for Gemini
         full_prompt = f"System: {system_prompt}\n\nHuman: {user_content}"
 
-        response = model.generate_content(
-            full_prompt,
-            generation_config=genai.types.GenerationConfig(
-                temperature=temperature,
-                max_output_tokens=max_tokens,
-            ),
-            request_options={"timeout": timeout}
-        )
+        # Preferred: google-genai
+        if self._client is not None:
+            # google-genai response object typically has `.text`
+            # Keep this intentionally defensive to avoid SDK/API drift breaking imports.
+            try:
+                response = self._client.models.generate_content(
+                    model=self.model_name,
+                    contents=full_prompt,
+                    config={
+                        "temperature": temperature,
+                        "max_output_tokens": max_tokens,
+                        "timeout": timeout,
+                    },
+                )
+            except TypeError:
+                # Fallback for older/newer google-genai signatures
+                response = self._client.models.generate_content(
+                    model=self.model_name,
+                    contents=full_prompt,
+                )
+
+            content = getattr(response, "text", None)
+            if not content:
+                # Some SDK variants expose candidates/parts
+                candidates = getattr(response, "candidates", None) or []
+                if candidates:
+                    content = getattr(candidates[0], "content", None)
+                content = content or ""
+
+        # Fallback: legacy google-generativeai (deprecated)
+        elif GOOGLE_LEGACY_AVAILABLE:
+            model = genai_legacy.GenerativeModel(self.model_name)
+            response = model.generate_content(
+                full_prompt,
+                generation_config=genai_legacy.types.GenerationConfig(
+                    temperature=temperature,
+                    max_output_tokens=max_tokens,
+                ),
+                request_options={"timeout": timeout},
+            )
+            content = response.text
+        else:
+            raise ImportError("No Google Gemini SDK installed (install google-genai or google-generativeai)")
 
         # Estimate token usage (rough approximation)
         input_chars = len(full_prompt)
-        output_chars = len(response.text)
+        output_chars = len(content)
         estimated_input_tokens = input_chars // 4  # Rough approximation
         estimated_output_tokens = output_chars // 4
         total_tokens = estimated_input_tokens + estimated_output_tokens
@@ -264,7 +316,7 @@ class GoogleModel(BaseModel):
         }
 
         return {
-            "content": response.text,
+            "content": content,
             "usage": usage
         }
 

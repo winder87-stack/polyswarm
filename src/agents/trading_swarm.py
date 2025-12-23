@@ -39,10 +39,12 @@ class TradingSwarm:
     def __init__(self) -> None:
         """Initialize advanced trading swarm with expected value analysis and Kelly sizing."""
         # Load enhanced configuration from environment
-        self.min_edge = float(os.getenv("MIN_EDGE", "0.05"))  # Minimum edge to trade
-        self.max_position = float(os.getenv("MAX_POSITION", "100"))  # Max position size in USDC (conservative)
-        self.min_liquidity = float(os.getenv("MIN_LIQUIDITY", "1000"))  # Minimum liquidity ($1,000 - realistic for Polymarket)
-        self.min_volume = float(os.getenv("MIN_VOLUME", "10000"))  # Minimum volume
+        # NOTE: keep env var compatibility with older configs, but default to repo risk rules.
+        self.min_edge = float(os.getenv("MIN_EDGE", "0.08"))  # Minimum edge to trade (8% default)
+        self.max_position = float(os.getenv("MAX_POSITION_SIZE", os.getenv("MAX_POSITION", "100")))  # Max position size in USDC
+        # IMPORTANT: matches repo slippage protection rules (Min Liquidity: $25,000)
+        self.min_liquidity = float(os.getenv("MIN_LIQUIDITY", "25000"))
+        self.min_volume = float(os.getenv("MIN_VOLUME", "50000"))  # Minimum volume (50k default)
         self.min_market_hours = int(os.getenv("MIN_MARKET_HOURS", "24"))  # Min hours until expiry
         self.expected_value_threshold = float(os.getenv("EV_THRESHOLD", "0.02"))  # Min EV to trade
         self.fee_rate = float(os.getenv("FEE_RATE", "0.02"))  # Polymarket fee rate (2%)
@@ -1090,7 +1092,7 @@ Be precise, analytical, and evidence-based in your assessments."""
         min_edge: float = 0.08,
         min_confidence: float = 0.6,
         min_volume: float = 50000,
-        min_liquidity: float = 1.0
+        min_liquidity: float = 25000.0
     ) -> List[TradingSignal]:
         """
         Smart market scanning with advanced filtering and expected value analysis.
@@ -1230,6 +1232,25 @@ Be precise, analytical, and evidence-based in your assessments."""
             Dict with execution status and details
         """
         try:
+            # ===== FINAL SAFETY GATES (never trade below hard rules) =====
+            market_volume = float(getattr(signal.market, "volume", 0) or 0)
+            market_liquidity = float(getattr(signal.market, "liquidity", 0) or 0)
+            if abs(signal.edge) < self.min_edge:
+                return {
+                    "status": "skipped",
+                    "reason": f"Edge {signal.edge:.1%} < min edge {self.min_edge:.1%}",
+                }
+            if market_volume < self.min_volume:
+                return {
+                    "status": "skipped",
+                    "reason": f"Volume ${market_volume:,.0f} < min volume ${self.min_volume:,.0f}",
+                }
+            if market_liquidity < self.min_liquidity:
+                return {
+                    "status": "skipped",
+                    "reason": f"Liquidity ${market_liquidity:,.0f} < min liquidity ${self.min_liquidity:,.0f}",
+                }
+
             # ===== TIMING ANALYSIS =====
             timing_signal = await entry_timing_optimizer.analyze_timing(
                 signal.market,
@@ -1273,8 +1294,6 @@ Be precise, analytical, and evidence-based in your assessments."""
             effective_size = kelly_size / (1 + self.fee_rate)
             shares = effective_size / price
 
-            market_volume = getattr(signal.market, 'volume', 0)
-            market_liquidity = getattr(signal.market, 'liquidity', 0)
             logger.info("💰 Executing {} trade (Kelly-sized, timing-adjusted)", signal.direction)
             logger.info("📊 Market: {} (vol=${}, liq=${})", signal.market.question[:45], market_volume, market_liquidity)
             logger.info("🎲 Probability: {:.1%} | Market: {:.1%} | Timing: {:.1%}",
@@ -1355,7 +1374,7 @@ Be precise, analytical, and evidence-based in your assessments."""
                     "timing_score": timing_signal.overall_timing_score
                 }
             else:
-                logger.error("❌ Trade execution failed")
+                logger.error("❌ Trade execution failed: {}", response)
                 return {"status": "failed", "reason": "API error", "response": response}
 
         except Exception as e:

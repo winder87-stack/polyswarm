@@ -12,7 +12,7 @@ print("🧪 Testing Risk Manager...")
 limits = RiskLimits(
     max_daily_loss=500.0,
     max_position_size=200.0,
-    min_edge=0.05
+    min_edge=0.08
 )
 
 # Initialize risk manager
