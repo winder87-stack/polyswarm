@@ -14,22 +14,33 @@ Requirements:
     - Small amount of MATIC in wallet (for gas)
 """
 
+import argparse
 import os
 import sys
 from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).parent.parent))
+from typing import Any
 
 from dotenv import load_dotenv
-load_dotenv()
-
 from py_clob_client.client import ClobClient
 
 HOST = "https://clob.polymarket.com"
 CHAIN_ID = 137
 
 
-def main():
+def main(argv: list[str] | None = None) -> int:
+    sys.path.insert(0, str(Path(__file__).parent.parent))
+    load_dotenv()
+
+    parser = argparse.ArgumentParser(
+        description="Set Polymarket token allowances (EOA wallets only)"
+    )
+    parser.add_argument(
+        "--yes",
+        action="store_true",
+        help="Skip interactive confirmation prompt (required for non-interactive runs).",
+    )
+    args = parser.parse_args(argv)
+
     print("=" * 60)
     print("🔓 SET POLYMARKET TOKEN ALLOWANCES")
     print("=" * 60)
@@ -62,19 +73,19 @@ def main():
     print()
 
     # Confirm
-    confirm = input("Continue? (yes/no): ").strip().lower()
-    if confirm != "yes":
-        print("Cancelled.")
-        return 0
+    if not args.yes:
+        if not sys.stdin.isatty():
+            print("❌ Non-interactive session detected. Re-run with --yes to proceed.")
+            return 2
+        confirm = input("Continue? (yes/no): ").strip().lower()
+        if confirm != "yes":
+            print("Cancelled.")
+            return 0
 
     # Initialize client
     try:
         client = ClobClient(
-            HOST,
-            key=private_key,
-            chain_id=CHAIN_ID,
-            signature_type=sig_type,
-            funder=funder
+            HOST, key=private_key, chain_id=CHAIN_ID, signature_type=sig_type, funder=funder
         )
 
         # Set API creds first
@@ -90,17 +101,19 @@ def main():
     print("Setting allowances (this may take a moment)...")
 
     try:
+        client_any: Any = client
+
         # Check current allowances
-        allowances = client.get_balance_allowance()
+        allowances = client_any.get_balance_allowance()
         print(f"Current allowances: {allowances}")
 
         # Set if needed
-        if hasattr(client, 'set_allowance'):
-            result = client.set_allowance()
+        if hasattr(client_any, "set_allowance"):
+            result = client_any.set_allowance()
             print(f"✅ Allowance result: {result}")
-        elif hasattr(client, 'update_balance_allowance'):
+        elif hasattr(client_any, "update_balance_allowance"):
             # Alternative method
-            result = client.update_balance_allowance()
+            result = client_any.update_balance_allowance()
             print(f"✅ Allowance result: {result}")
         else:
             print("ℹ️  Allowance methods not available in this client version")
