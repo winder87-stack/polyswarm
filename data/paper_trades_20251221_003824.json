@@ -1,0 +1,21 @@
+{
+  "session_info": {
+    "start_time": "2025-12-21T00:38:24.010926",
+    "end_time": "2025-12-21T00:46:04.086366",
+    "config": {
+      "duration_hours": 24,
+      "scan_interval_minutes": 30,
+      "min_edge": 0.08,
+      "min_confidence": 0.6,
+      "max_position_size": 50,
+      "starting_bankroll": 1000,
+      "max_daily_trades": 20,
+      "min_liquidity": 5000,
+      "min_volume": 10000
+    },
+    "final_bankroll": 1000,
+    "total_pnl": 0.0
+  },
+  "closed_trades": [],
+  "final_positions": []
+}

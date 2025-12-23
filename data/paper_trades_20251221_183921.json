@@ -1,0 +1,124 @@
+{
+  "session_info": {
+    "start_time": "2025-12-21T18:39:21.469122",
+    "end_time": "2025-12-21T18:40:26.195772",
+    "config": {
+      "duration_hours": 24,
+      "scan_interval_minutes": 30,
+      "min_volume": 50000,
+      "min_liquidity": 1.0,
+      "max_order_pct_of_liquidity": 0.02,
+      "max_slippage_pct": 0.02,
+      "min_edge": 0.08,
+      "min_confidence": 0.6,
+      "max_position_size": 50,
+      "starting_bankroll": 1000,
+      "max_daily_trades": 20,
+      "kelly_multiplier": 0.25,
+      "max_daily_loss": 100,
+      "max_drawdown_pct": 0.15
+    },
+    "final_bankroll": 1000.0,
+    "total_pnl": 0.0
+  },
+  "closed_trades": [
+    {
+      "market_slug": "russia-x-ukraine-ceasefire-in-2025",
+      "market_question": "Russia x Ukraine ceasefire in 2025?",
+      "direction": "YES",
+      "entry_price": 0.0185,
+      "exit_price": 0.0185,
+      "market_price_at_entry": 0.0185,
+      "size_usd": 42.131249999999994,
+      "exit_value": 42.131249999999994,
+      "realized_pnl": 0.0,
+      "return_pct": 0.0,
+      "edge": 0.0,
+      "confidence": 0.7,
+      "entry_time": "2025-12-21T18:39:25.342327",
+      "exit_time": "2025-12-21T18:40:25.942613",
+      "reason": "END OF TEST (ERROR)",
+      "holding_period_hours": 0.016833414444444444
+    },
+    {
+      "market_slug": "will-thunderbolts-be-the-top-grossing-movie-of-2025",
+      "market_question": "Will Thunderbolts be the top grossing movie of 2025?",
+      "direction": "YES",
+      "entry_price": 0.0005,
+      "exit_price": 0.0005,
+      "market_price_at_entry": 0.0005,
+      "size_usd": 41.86485105468749,
+      "exit_value": 41.86485105468749,
+      "realized_pnl": 0.0,
+      "return_pct": 0.0,
+      "edge": 0.0,
+      "confidence": 0.7,
+      "entry_time": "2025-12-21T18:39:25.343078",
+      "exit_time": "2025-12-21T18:40:26.071732",
+      "reason": "END OF TEST (ERROR)",
+      "holding_period_hours": 0.01686907166666667
+    },
+    {
+      "market_slug": "will-bitcoin-reach-1000000-by-december-31-2025",
+      "market_question": "Will Bitcoin reach $1,000,000 by December 31, 2025?",
+      "direction": "YES",
+      "entry_price": 0.0025,
+      "exit_price": 0.0025,
+      "market_price_at_entry": 0.0025,
+      "size_usd": 39.874794725963135,
+      "exit_value": 39.874794725963135,
+      "realized_pnl": 0.0,
+      "return_pct": 0.0,
+      "edge": 0.0,
+      "confidence": 0.7,
+      "entry_time": "2025-12-21T18:39:25.343641",
+      "exit_time": "2025-12-21T18:40:26.195564",
+      "reason": "END OF TEST (ERROR)",
+      "holding_period_hours": 0.016903312777777776
+    }
+  ],
+  "final_positions": [
+    {
+      "market_slug": "russia-x-ukraine-ceasefire-in-2025",
+      "market_question": "Russia x Ukraine ceasefire in 2025?",
+      "direction": "YES",
+      "entry_price": 0.0185,
+      "size_usd": 42.131249999999994,
+      "timestamp": "2025-12-21T18:39:25.342327",
+      "market_data": {
+        "yes_price": 0.0185,
+        "no_price": 0.9815,
+        "liquidity": 796203.47332,
+        "volume": 62035247.848355
+      }
+    },
+    {
+      "market_slug": "will-thunderbolts-be-the-top-grossing-movie-of-2025",
+      "market_question": "Will Thunderbolts be the top grossing movie of 2025?",
+      "direction": "YES",
+      "entry_price": 0.0005,
+      "size_usd": 41.86485105468749,
+      "timestamp": "2025-12-21T18:39:25.343078",
+      "market_data": {
+        "yes_price": 0.0005,
+        "no_price": 0.9995,
+        "liquidity": 2005273.65744,
+        "volume": 15653555.686287
+      }
+    },
+    {
+      "market_slug": "will-bitcoin-reach-1000000-by-december-31-2025",
+      "market_question": "Will Bitcoin reach $1,000,000 by December 31, 2025?",
+      "direction": "YES",
+      "entry_price": 0.0025,
+      "size_usd": 39.874794725963135,
+      "timestamp": "2025-12-21T18:39:25.343641",
+      "market_data": {
+        "yes_price": 0.0025,
+        "no_price": 0.9975,
+        "liquidity": 1270451.84919,
+        "volume": 24375465.572484
+      }
+    }
+  ]
+}

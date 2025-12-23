@@ -1,0 +1,26 @@
+{
+  "session_info": {
+    "start_time": "2025-12-21T17:58:42.504968",
+    "end_time": "2025-12-21T18:00:53.041658",
+    "config": {
+      "duration_hours": 24,
+      "scan_interval_minutes": 30,
+      "min_volume": 50000,
+      "min_liquidity": 1.0,
+      "max_order_pct_of_liquidity": 0.02,
+      "max_slippage_pct": 0.02,
+      "min_edge": 0.08,
+      "min_confidence": 0.6,
+      "max_position_size": 50,
+      "starting_bankroll": 1000,
+      "max_daily_trades": 20,
+      "kelly_multiplier": 0.25,
+      "max_daily_loss": 100,
+      "max_drawdown_pct": 0.15
+    },
+    "final_bankroll": 1000,
+    "total_pnl": 0.0
+  },
+  "closed_trades": [],
+  "final_positions": []
+}

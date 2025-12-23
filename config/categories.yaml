@@ -1,0 +1,190 @@
+# ===========================================
+# Category Configuration
+# ===========================================
+# Note: All news and external odds sources are FREE
+# No API keys required for external data
+#
+# Available news_sources:
+#   - google_news (RSS)
+#   - rss_feeds (NPR, NYT, ESPN, etc.)
+#
+# Available external_odds_sources:
+#   - predictit (free public API)
+#   - metaculus (free public API)
+# ===========================================
+
+default:
+  enabled: true
+  model_weights:
+    claude: 1.3
+    gemini: 1.3
+    gpt: 1.2
+    perplexity: 1.2
+    deepseek: 1.0
+  min_edge: 0.08
+  min_confidence: 0.5
+  max_position_size: 100
+  max_exposure_pct: 25
+  preferred_time_to_expiry:
+    min_days: 1
+    max_days: 60
+  min_volume: 50000
+  min_liquidity: 1.0
+  max_order_pct_of_liquidity: 0.02
+  news_sources:
+    - google_news
+    - rss_feeds
+  external_odds_sources:
+    - predictit
+    - metaculus
+
+politics:
+  enabled: true
+  model_weights:
+    claude: 1.3
+    gemini: 1.2
+    gpt: 1.2
+    perplexity: 1.5  # Higher - news crucial for politics
+    deepseek: 0.9
+  min_edge: 0.08
+  min_confidence: 0.55
+  max_position_size: 75
+  max_exposure_pct: 30
+  preferred_time_to_expiry:
+    min_days: 7
+    max_days: 90
+  min_volume: 100000      # Higher for politics (more liquid)
+  min_liquidity: 10.0
+  max_order_pct_of_liquidity: 0.02
+  news_sources:
+    - google_news
+    - rss_feeds
+  external_odds_sources:
+    - predictit
+    - metaculus
+  notes: "Political markets often mispriced during news events"
+
+sports:
+  enabled: true
+  model_weights:
+    claude: 1.0
+    gemini: 1.0
+    gpt: 1.3  # Good at sports analysis
+    perplexity: 1.3  # Injury news
+    deepseek: 1.0
+  min_edge: 0.10  # Higher - more efficient market
+  min_confidence: 0.6
+  max_position_size: 50
+  max_exposure_pct: 25
+  preferred_time_to_expiry:
+    min_days: 1
+    max_days: 14
+  min_volume: 50000
+  min_liquidity: 1.0
+  max_order_pct_of_liquidity: 0.01  # More conservative
+  news_sources:
+    - google_news
+    - rss_feeds
+  external_odds_sources:
+    - predictit
+  notes: "Sports markets are efficient - need strong edge"
+
+crypto:
+  enabled: true
+  model_weights:
+    claude: 1.2
+    gemini: 1.0
+    gpt: 1.0
+    perplexity: 1.4  # Real-time crypto news
+    deepseek: 1.1
+  min_edge: 0.12  # Higher - volatile
+  min_confidence: 0.6
+  max_position_size: 40
+  max_exposure_pct: 20
+  preferred_time_to_expiry:
+    min_days: 3
+    max_days: 30
+  min_volume: 75000       # Higher for crypto (more volatile)
+  min_liquidity: 5.0
+  max_order_pct_of_liquidity: 0.01   # Very conservative
+  news_sources:
+    - google_news
+    - rss_feeds
+  external_odds_sources:
+    - metaculus
+  notes: "Crypto markets are volatile - reduce size"
+
+entertainment:
+  enabled: false  # Disabled - hard to predict
+  model_weights:
+    claude: 1.2
+    gemini: 1.1
+    gpt: 1.1
+    perplexity: 1.2
+    deepseek: 1.0
+  min_edge: 0.15  # High threshold
+  min_confidence: 0.7
+  max_position_size: 30
+  max_exposure_pct: 10
+  preferred_time_to_expiry:
+    min_days: 7
+    max_days: 60
+  min_volume: 50000
+  min_liquidity: 1.0
+  max_order_pct_of_liquidity: 0.02
+  news_sources:
+    - google_news
+    - rss_feeds
+  external_odds_sources: []
+  notes: "Entertainment markets are unpredictable - disabled by default"
+
+science:
+  enabled: true
+  model_weights:
+    claude: 1.5  # Best at technical analysis
+    gemini: 1.3
+    gpt: 1.2
+    perplexity: 1.1
+    deepseek: 1.0
+  min_edge: 0.10
+  min_confidence: 0.65
+  max_position_size: 60
+  max_exposure_pct: 20
+  preferred_time_to_expiry:
+    min_days: 14
+    max_days: 180
+  min_volume: 50000
+  min_liquidity: 1.0
+  max_order_pct_of_liquidity: 0.02
+  news_sources:
+    - google_news
+    - rss_feeds
+  external_odds_sources:
+    - metaculus
+  notes: "Science/tech markets need domain expertise"
+
+finance:
+  enabled: true
+  model_weights:
+    claude: 1.3
+    gemini: 1.2
+    gpt: 1.2
+    perplexity: 1.3
+    deepseek: 1.0
+  min_edge: 0.10
+  min_confidence: 0.6
+  max_position_size: 50
+  max_exposure_pct: 20
+  preferred_time_to_expiry:
+    min_days: 7
+    max_days: 90
+  min_volume: 50000
+  min_liquidity: 1.0
+  max_order_pct_of_liquidity: 0.02
+  news_sources:
+    - google_news
+    - rss_feeds
+  external_odds_sources:
+    - predictit
+    - metaculus
+  notes: "Finance markets move fast on news"
